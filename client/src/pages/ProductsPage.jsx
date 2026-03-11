@@ -8,7 +8,6 @@ const ProductsPage = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [view, setView] = useState('active');
-    const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
     const [formData, setFormData] = useState({ name: '', price: '', description: '' });
@@ -28,19 +27,6 @@ const ProductsPage = () => {
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
-    };
-
-    const handleSort = (key, direction) => {
-        const sorted = [...products].sort((a, b) => {
-            if (a[key] < b[key]) return direction === 'ascending' ? -1 : 1;
-            if (a[key] > b[key]) return direction === 'ascending' ? 1 : -1;
-            return 0;
-        });
-        setProducts(sorted);
     };
 
     const openModal = (product = null) => {
@@ -98,33 +84,31 @@ const ProductsPage = () => {
         }
     };
 
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
     const columns = [
-        { key: 'name', label: 'Name', sortable: true },
-        { key: 'price', label: 'Price', sortable: true, render: (val) => `$${Number(val).toFixed(2)}` },
-        { key: 'description', label: 'Description', sortable: false },
+        { accessor: 'name', header: 'Name', sortable: true },
+        { accessor: 'price', header: 'Price', sortable: true, render: (val) => `$${Number(val).toFixed(2)}` },
+        { accessor: 'description', header: 'Description', sortable: false },
         {
-            key: 'created_at',
-            label: view === 'active' ? 'Created At' : 'Deleted At',
+            accessor: 'created_at',
+            header: view === 'active' ? 'Created At' : 'Deleted At',
             sortable: true,
             render: (val, item) => new Date(view === 'active' ? item.created_at : item.deleted_at).toLocaleDateString()
         }
     ];
 
-    const actions = (item) => (
-        view === 'active' ? (
-            <>
-                <button className="btn btn-secondary" onClick={() => openModal(item)}>Edit</button>
-                <button className="btn btn-danger" onClick={() => handleDelete(item.id)}>Delete</button>
-            </>
-        ) : (
-            <button className="btn btn-success" onClick={() => handleRestore(item.id)}>Restore</button>
+    const processedProducts = products.map(p => ({
+        ...p,
+        actions: (
+            view === 'active' ? (
+                <>
+                    <button className="btn btn-secondary" onClick={() => openModal(p)}>Edit</button>
+                    <button className="btn btn-danger" onClick={() => handleDelete(p.id)}>Delete</button>
+                </>
+            ) : (
+                <button className="btn btn-success" onClick={() => handleRestore(p.id)}>Restore</button>
+            )
         )
-    );
+    }));
 
     return (
         <div className="app-container">
@@ -151,13 +135,6 @@ const ProductsPage = () => {
                         Deleted Products
                     </button>
                 </div>
-                <input
-                    type="text"
-                    placeholder="Search products..."
-                    className="search-input"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                />
             </section>
 
             {loading ? (
@@ -165,9 +142,7 @@ const ProductsPage = () => {
             ) : (
                 <Table
                     columns={columns}
-                    data={filteredProducts}
-                    actions={actions}
-                    onSort={handleSort}
+                    data={processedProducts}
                 />
             )}
 

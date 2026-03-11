@@ -49,28 +49,30 @@ function Table({ columns, data }) {
           <tr>
             {columns.map((col) => (
               <th
-                key={col.accessor}
-                onClick={() => handleSort(col.accessor)}
+                key={col.accessor || col.key}
+                onClick={() => handleSort(col.accessor || col.key)}
               >
-                {col.header}
+                {col.header || col.label}
               </th>
             ))}
+            {data.some(row => row.actions !== undefined) && <th>Actions</th>}
           </tr>
         </thead>
 
         <tbody>
           {sortedData.length === 0 ? (
             <tr>
-              <td colSpan={columns.length}>No data</td>
+              <td colSpan={columns.length + 1}>No data</td>
             </tr>
           ) : (
             sortedData.map((row, index) => (
-              <tr key={index} className={row.deleted_at ? "deleted-row" : ""}>
+              <tr key={row.id || index} className={row.deleted_at ? "deleted-row" : ""}>
                 {columns.map((col) => (
-                  <td key={col.accessor}>
-                    {typeof row[col.accessor] === 'object' ? row[col.accessor] : row[col.accessor]}
+                  <td key={col.accessor || col.key}>
+                    {col.render ? col.render(row[col.accessor || col.key], row) : row[col.accessor || col.key]}
                   </td>
                 ))}
+                {row.actions && <td className="actions-cell">{row.actions}</td>}
               </tr>
             ))
           )}

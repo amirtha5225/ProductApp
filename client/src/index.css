@@ -170,6 +170,32 @@ th {
   font-weight: 600;
   color: var(--text-muted);
   border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.sortable-header {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sortable-header:hover {
+  background-color: #f1f5f9;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sort-icon {
+  font-size: 0.875rem;
+  color: #cbd5e1;
+  transition: color 0.2s;
+}
+
+.sort-icon.active {
+  color: var(--primary);
 }
 
 td {

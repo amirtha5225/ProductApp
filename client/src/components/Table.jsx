@@ -26,10 +26,12 @@ function Table({ columns, data }) {
     return 0;
   });
 
-  const handleSort = (key) => {
+  const handleSort = (key, sortable) => {
+    if (!sortable || filteredData.length === 0) return;
+    
     setSortConfig((prev) => {
-      if (prev && prev.key === key && prev.direction === "asc") {
-        return { key, direction: "desc" };
+      if (prev && prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
       }
       return { key, direction: "asc" };
     });
@@ -50,9 +52,20 @@ function Table({ columns, data }) {
             {columns.map((col) => (
               <th
                 key={col.accessor || col.key}
-                onClick={() => handleSort(col.accessor || col.key)}
+                onClick={() => handleSort(col.accessor || col.key, col.sortable)}
+                className={col.sortable && filteredData.length > 0 ? "sortable-header" : ""}
+                style={{ cursor: filteredData.length === 0 ? "default" : "pointer" }}
               >
-                {col.header || col.label}
+                <div className="header-content">
+                  {col.header || col.label}
+                  {col.sortable && (
+                    <span className={`sort-icon ${sortConfig?.key === (col.accessor || col.key) ? "active" : ""}`}>
+                      {sortConfig?.key === (col.accessor || col.key) 
+                        ? (sortConfig.direction === "asc" ? "▲" : "▼") 
+                        : "⇅"}
+                    </span>
+                  )}
+                </div>
               </th>
             ))}
             {data.some(row => row.actions !== undefined) && <th>Actions</th>}
